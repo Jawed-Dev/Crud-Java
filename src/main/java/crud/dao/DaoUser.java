@@ -1,7 +1,8 @@
-package www.crud.dao;
-import www.crud.database.DatabaseConnection;
-import www.crud.model.ModelUser;
-import www.crud.param.UpdateUserParams;
+package crud.dao;
+import crud.database.DatabaseConnection;
+import crud.model.ModelUser;
+import crud.param.SearchUserByParams;
+import crud.param.UpdateUserParams;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ public class DaoUser {
             return affectedRows > 0;
         }
         catch (SQLException error) {
-            //// e.printStackTrace();
             System.err.println("SQL Error: " + error.getMessage());
             return false;
         }
@@ -52,14 +52,15 @@ public class DaoUser {
             return affectedRows > 0;
         }
         catch (SQLException error) {
-            //// e.printStackTrace();
             System.err.println("SQL Error: " + error.getMessage());
             return false;
         }
     }
 
     public boolean loadUserByEmail(ModelUser modelUser, String email) {
-        String query = "SELECT user_id, user_last_name, user_first_name, user_email, user_create_at, user_active FROM user WHERE user_email = ?";
+        String query = "SELECT user_id, user_last_name, user_first_name, user_email, user_create_at, user_active " +
+                "FROM user " +
+                "WHERE user_email = ?";
         try(Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, email);
@@ -83,7 +84,6 @@ public class DaoUser {
             }
         }
         catch (SQLException e) {
-            //// e.printStackTrace();
             System.err.println("SQL Error: " + e.getMessage());
         }
         return false;
@@ -104,7 +104,8 @@ public class DaoUser {
     }
 
     public boolean updateEmail(ModelUser modelUser, UpdateUserParams params) {
-        String query = "UPDATE user SET user_last_name = ?, user_first_name = ?, user_email = ?, user_active = ?  WHERE user_email = ?";
+        String query = "UPDATE user SET user_last_name = ?, user_first_name = ?, user_email = ?, user_active = ?  " +
+                "WHERE user_email = ?";
 
         String lastName =  (params.getLastName() == null) ? modelUser.getLastName() : params.getLastName();
         String firstName =  (params.getFirstName() == null) ? modelUser.getFirstName() : params.getFirstName();
@@ -156,12 +157,30 @@ public class DaoUser {
         return users;
     }
 
-    public List<ModelUser> getUsersByFirstName(String name) {
-        String query = "SELECT user_id, user_last_name, user_first_name, user_email FROM user WHERE user_last_name LIKE ?";
+    public List<ModelUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
+        StringBuilder query = new StringBuilder(
+                "SELECT user_id, user_first_name, user_last_name, user_email " +
+                "FROM user " +
+                "WHERE 1=1 ");
+        List<String> parameters = new ArrayList<>();
+        if(searchUserByParams.getFirstName() != null) {
+            query.append("AND user_first_name LIKE ? ");
+            parameters.add("%" + searchUserByParams.getFirstName() + "%");
+        }
+        if(searchUserByParams.getLastName() != null) {
+            query.append("AND user_last_name LIKE ? ");
+            parameters.add("%" + searchUserByParams.getLastName() + "%");
+        }
+        if(searchUserByParams.getEmail() != null) {
+            query.append("AND user_email LIKE ? ");
+            parameters.add("%" + searchUserByParams.getEmail() + "%");
+        }
         List<ModelUser> users = new ArrayList<>();
         try(Connection connection = this.databaseConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, "%" + name + "%");
+            PreparedStatement preparedStatement = connection.prepareStatement(query.toString())) {
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setString(i + 1, parameters.get(i));
+            }
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 ModelUser user = ModelUser.fromResultSet(resultSet);

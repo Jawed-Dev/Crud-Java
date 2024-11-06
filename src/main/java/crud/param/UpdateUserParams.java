@@ -1,4 +1,4 @@
-package www.crud.param;
+package crud.param;
 
 public class UpdateUserParams {
     private final String newEmail;

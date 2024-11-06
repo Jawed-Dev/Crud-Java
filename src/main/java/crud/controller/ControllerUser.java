@@ -1,8 +1,9 @@
-package www.crud.controller;
-import www.crud.param.UpdateUserParams;
-import www.crud.service.ServiceUser;
-import www.crud.model.ModelUser;
-import www.crud.view.ViewUser;
+package crud.controller;
+import crud.param.SearchUserByParams;
+import crud.param.UpdateUserParams;
+import crud.service.ServiceUser;
+import crud.model.ModelUser;
+import crud.view.ViewUser;
 
 import java.util.List;
 
@@ -62,8 +63,8 @@ public class ControllerUser {
         }
     }
 
-    public void getUsersByFirstName (String name) {
-        List<ModelUser> users = this.serviceUser.getUsersByFirstName(name);
+    public void getUsersBySearch (SearchUserByParams searchUserByParams) {
+        List<ModelUser> users = this.serviceUser.getUsersBySearch(searchUserByParams);
         for (ModelUser user : users) {
             this.viewUser.renderObjectConsole(user);
         }

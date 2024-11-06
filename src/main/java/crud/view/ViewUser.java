@@ -1,4 +1,4 @@
-package www.crud.view;
+package crud.view;
 
 public class ViewUser {
 
