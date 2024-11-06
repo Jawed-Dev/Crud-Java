@@ -1,4 +1,4 @@
-package www.crud.database;
+package crud.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

@@ -1,7 +1,8 @@
-package www.crud.service;
-import www.crud.dao.DaoUser;
-import www.crud.model.ModelUser;
-import www.crud.param.UpdateUserParams;
+package crud.service;
+import crud.dao.DaoUser;
+import crud.model.ModelUser;
+import crud.param.SearchUserByParams;
+import crud.param.UpdateUserParams;
 
 import java.util.List;
 
@@ -92,7 +93,7 @@ public class ServiceUser {
         return this.daoUser.getAllUsers();
     }
 
-    public List<ModelUser> getUsersByFirstName(String name) {
-        return this.daoUser.getUsersByFirstName(name);
+    public List<ModelUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
+        return this.daoUser.getUsersBySearch(searchUserByParams);
     }
 }
