@@ -18,18 +18,13 @@ public class Simulation {
      * Simulation 1 : Add an user and update this user.
      */
     public void simulation1() {
-
         String currentEmail = "jawed.sim1@gmail.com";
         String newEmail = "jawed.sim1.update@gmail.com";
-
-        // for clean DB before this simulation
-        routerUser.deleteUser(currentEmail);
-
         this.routerUser.addUser("Jawed", "bouta", currentEmail);
 
         UpdateUserParams params = new UpdateUserParams.Builder()
         .withFirstName("Jawed-new")
-        .withOldEmail(currentEmail)
+        .withCurrentEmail(currentEmail)
         .withNewEmail(newEmail)
         .build();
         routerUser.updateUser(params);
@@ -59,7 +54,12 @@ public class Simulation {
     public void simulation4() {
         SearchUserByParams searchUserByParams = new SearchUserByParams.Builder()
                 .withEmail("jawed")
+                .withFirstName("Coucou")
                 .build();
         this.routerUser.getUsersBySearch(searchUserByParams);
+    }
+
+    public boolean clearSimulations() {
+        return this.routerUser.deleteAllUsers();
     }
 }

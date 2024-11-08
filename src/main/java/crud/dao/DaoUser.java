@@ -16,12 +16,12 @@ public class DaoUser {
     }
 
     public boolean addUser(ModelUser modelUser) {
-        String query = "INSERT INTO user (user_last_name, user_first_name, user_email, user_create_at) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO user (user_first_name, user_last_name, user_email, user_create_at) VALUES (?, ?, ?, ?)";
         try (Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-            preparedStatement.setString(1, modelUser.getLastName());
-            preparedStatement.setString(2, modelUser.getFirstName());
+            preparedStatement.setString(1, modelUser.getFirstName());
+            preparedStatement.setString(2, modelUser.getLastName());
             preparedStatement.setString(3, modelUser.getEmail());
 
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -43,11 +43,11 @@ public class DaoUser {
         }
     }
 
-    public boolean deleteUser(ModelUser modelUser, String email) {
-        String query = "DELETE FROM user WHERE user_email = ?";
+    public boolean deleteUser(ModelUser modelUser) {
+        String query = "DELETE FROM user WHERE user_id = ?";
         try (Connection connection = this.databaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setString(1, email);
+            preparedStatement.setInt(1, modelUser.getId());
             int affectedRows = preparedStatement.executeUpdate();
             return affectedRows > 0;
         }
@@ -57,17 +57,17 @@ public class DaoUser {
         }
     }
 
-    public boolean loadUserByEmail(ModelUser modelUser, String email) {
-        String query = "SELECT user_id, user_last_name, user_first_name, user_email, user_create_at, user_active " +
+    public boolean loadModelUserByEmail(ModelUser modelUser, int userId) {
+        String query = "SELECT user_id, user_first_name, user_last_name, user_email, user_create_at, user_active " +
                 "FROM user " +
-                "WHERE user_email = ?";
+                "WHERE user_id = ?";
         try(Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, email);
+            preparedStatement.setInt(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next()) {
-                int userId = resultSet.getInt("user_id");
+                //int resUserId = resultSet.getInt("user_id");
                 String firstName = resultSet.getString("user_first_name");
                 String lastName = resultSet.getString("user_last_name");
                 String userEmail = resultSet.getString("user_email");
@@ -104,22 +104,22 @@ public class DaoUser {
     }
 
     public boolean updateEmail(ModelUser modelUser, UpdateUserParams params) {
-        String query = "UPDATE user SET user_last_name = ?, user_first_name = ?, user_email = ?, user_active = ?  " +
-                "WHERE user_email = ?";
+        String query = "UPDATE user SET user_first_name = ?, user_last_name = ?,  user_email = ?, user_active = ?  " +
+                "WHERE user_id = ?";
 
-        String lastName =  (params.getLastName() == null) ? modelUser.getLastName() : params.getLastName();
         String firstName =  (params.getFirstName() == null) ? modelUser.getFirstName() : params.getFirstName();
+        String lastName =  (params.getLastName() == null) ? modelUser.getLastName() : params.getLastName();
         String newEmail =  (params.getNewEmail() == null) ? modelUser.getEmail() : params.getNewEmail();
         Boolean isUserActive = (params.isUserActive() == null) ? modelUser.isUserActive() : params.isUserActive();
 
         try(Connection connection = this.databaseConnection.getConnection();
             PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, lastName);
-            stmt.setString(2, firstName);
+            stmt.setString(1, firstName);
+            stmt.setString(2, lastName);
             stmt.setString(3, newEmail);
             stmt.setBoolean(4, isUserActive);
-            stmt.setString(5, modelUser.getEmail());
+            stmt.setInt(5, modelUser.getId());
             int affectedRows = stmt.executeUpdate();
             boolean isUpdateSuccess =  affectedRows > 0;
 
@@ -140,7 +140,7 @@ public class DaoUser {
     }
 
     public List<ModelUser> getAllUsers() {
-        String query = "SELECT user_id, user_last_name, user_first_name, user_email FROM user ORDER BY user_id ASC";
+        String query = "SELECT user_id, user_first_name, user_last_name, user_email FROM user ORDER BY user_id ASC";
         List<ModelUser> users = new ArrayList<>();
         try(Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -193,4 +193,40 @@ public class DaoUser {
         }
         return users;
     }
+
+    /**
+     * For clear users before simulations
+     * @return boolean
+     */
+    public boolean deleteAllUsers() {
+        String query = "DELETE FROM user WHERE user_id > 0";
+        try(Connection connection = this.databaseConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            int affectedRows = preparedStatement.executeUpdate();
+            return affectedRows > 0;
+        }
+        catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public Integer getUserIdByEmail(String email) {
+        String query = "SELECT user_id FROM user WHERE user_email = ?";
+        try (Connection connection = this.databaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getInt("user_id");
+            }
+        }
+        catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
+        }
+        return null;
+    }
+
 }

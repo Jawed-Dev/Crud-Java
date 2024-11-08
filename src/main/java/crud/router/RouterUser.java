@@ -21,8 +21,8 @@ public class RouterUser {
         this.controllerUser = new ControllerUser(serviceUser, viewUser);
     }
 
-    public void addUser(String lastName, String firstName, String email) {
-        ModelUser modelUser = new ModelUser(lastName,firstName, email);
+    public void addUser(String firstName, String lastName, String email) {
+        ModelUser modelUser = new ModelUser(firstName, lastName, email);
         this.controllerUser.addUser(modelUser);
     }
 
@@ -42,5 +42,9 @@ public class RouterUser {
 
     public void getUsersBySearch(SearchUserByParams searchUserByParams) {
         this.controllerUser.getUsersBySearch(searchUserByParams);
+    }
+
+    public boolean deleteAllUsers() {
+        return this.controllerUser.deleteAllUsers();
     }
 }

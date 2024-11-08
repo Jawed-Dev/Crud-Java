@@ -13,16 +13,9 @@ public class ModelUser {
 
 
     // constructor
-    public ModelUser(String lastName, String firstName, String email, Boolean isUserActive) {
-        this.lastName = lastName;
+    public ModelUser(String firstName, String lastName, String email) {
         this.firstName = firstName;
-        this.email = email;
-        this.isUserActive = isUserActive;
-    }
-
-    public ModelUser(String lastName, String firstName, String email) {
         this.lastName = lastName;
-        this.firstName = firstName;
         this.email = email;
         this.isUserActive = true;
     }
@@ -32,12 +25,12 @@ public class ModelUser {
     // methods
     @Override
     public String toString() {
-        return "ModelUser{" +
-                "id = " + this.id +
-                ", lastName = '" + this.lastName + '\'' +
-                ", firstName = '" + this.firstName + '\'' +
-                ", email = '" + this.email + '\'' +
-                "}";
+        return "ModelUser {" +
+            "id = " + this.id +
+            ", firstName = '" + this.firstName + '\'' +
+            ", lastName = '" + this.lastName + '\'' +
+            ", email = '" + this.email + '\'' +
+            "}";
     }
 
 
@@ -58,11 +51,11 @@ public class ModelUser {
     public String getEmail() {
         return this.email;
     }
-    public String getLastName() {
-        return this.lastName;
-    }
     public String getFirstName() {
         return this.firstName;
+    }
+    public String getLastName() {
+        return this.lastName;
     }
     public Boolean isUserActive() {
         return this.isUserActive;
@@ -76,10 +69,10 @@ public class ModelUser {
     public void updateFirstName(String firstName) {
         this.firstName = firstName;
     }
+
     public Timestamp getCreateAt() {
         return createAt;
     }
-
 
     public void updateEmail(String email) {
         this.email = email;
