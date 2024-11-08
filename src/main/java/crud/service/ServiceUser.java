@@ -22,9 +22,8 @@ public class ServiceUser {
             }
             return daoUser.addUser(modelUser);
         }
-        catch (Exception e) {  // Catch more specific exceptions as needed
-            System.err.println("SQL Error: " + e.getMessage());
-            // Return false or handle differently if an error occurs
+        catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
         }
         return false;
     }
@@ -34,17 +33,31 @@ public class ServiceUser {
             return daoUser.isUserExistingByEmail(email);
         }
         catch (Exception e) {
-            System.err.println("SQL Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
         }
         return false;
     }
-
-    public boolean loadUserByEmail(ModelUser modelUser, String email) {
+    
+    public Integer getUserIdByEmail(String email) {
         try {
-            return daoUser.loadUserByEmail(modelUser, email);
+            return daoUser.getUserIdByEmail(email);
         }
         catch (Exception e) {
-            System.err.println("SQL Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean loadModelUserByEmail(ModelUser modelUser, String email) {
+        try {
+            // Cause Model not loaded before, we need user ID sql here
+            int userId = this.getUserIdByEmail(email);
+            if(userId < 1) return false;
+
+            return daoUser.loadModelUserByEmail(modelUser, userId);
+        }
+        catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
         }
         return false;
     }
@@ -56,27 +69,27 @@ public class ServiceUser {
                 System.out.println("Aucun utilisateur n'existe à cet email.");
                 return false;
             }
-            boolean isUserLoaded = this.loadUserByEmail(modelUser, email);
+            boolean isUserLoaded = this.loadModelUserByEmail(modelUser, email);
             if(!isUserLoaded) {
                 System.out.println("Le chargement de l'utilisateur a échoué.");
                 return false;
             }
-            return daoUser.deleteUser(modelUser, email);
+            return daoUser.deleteUser(modelUser);
         }
         catch (Exception e) {
-            System.err.println("SQL Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
         }
         return false;
     }
 
     public boolean updateEmail(ModelUser modelUser, UpdateUserParams params) {
         try {
-            boolean isUserExist = this.isUserExistingByEmail(params.getOldEmail());
+            boolean isUserExist = this.isUserExistingByEmail(params.getCurrentEmail());
             if(!isUserExist) {
                 System.out.println("Aucun utilisateur n'existe à cet email.");
                 return false;
             }
-            boolean isUserLoaded = this.loadUserByEmail(modelUser, params.getOldEmail());
+            boolean isUserLoaded = this.loadModelUserByEmail(modelUser, params.getCurrentEmail());
             if(!isUserLoaded) {
                 System.out.println("Le chargement de l'utilisateur a échoué.");
                 return false;
@@ -84,7 +97,7 @@ public class ServiceUser {
             return daoUser.updateEmail(modelUser, params);
         }
         catch (Exception e) {
-            System.err.println("SQL Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
         }
         return false;
     }
@@ -95,5 +108,9 @@ public class ServiceUser {
 
     public List<ModelUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
         return this.daoUser.getUsersBySearch(searchUserByParams);
+    }
+
+    public boolean deleteAllUsers() {
+        return this.daoUser.deleteAllUsers();
     }
 }

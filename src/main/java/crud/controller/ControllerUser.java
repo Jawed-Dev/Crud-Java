@@ -69,4 +69,11 @@ public class ControllerUser {
             this.viewUser.renderObjectConsole(user);
         }
     }
+
+    public boolean deleteAllUsers() {
+        boolean isUsersDeleted = this.serviceUser.deleteAllUsers();
+        String message = (isUsersDeleted) ? "Les utilisateurs ont été réinitialisés" : "Les utilisateurs n'ont pas été réinitialisés";
+        this.viewUser.renderMessageConsole(message);
+        return isUsersDeleted;
+    }
 }

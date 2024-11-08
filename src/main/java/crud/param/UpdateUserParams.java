@@ -5,11 +5,11 @@ public class UpdateUserParams {
     private final String firstName;
     private final String lastName;
     private final Boolean userActive;
-    private final String oldEmail;
+    private final String currentEmail;
 
     private UpdateUserParams(Builder builder) {
         this.newEmail = builder.newEmail;
-        this.oldEmail = builder.oldEmail;
+        this.currentEmail = builder.currentEmail;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
         this.userActive = builder.userActive;
@@ -20,14 +20,14 @@ public class UpdateUserParams {
         private String firstName;
         private String lastName;
         private Boolean userActive;
-        private String oldEmail;
+        private String currentEmail;
 
         public Builder withNewEmail(String newEmail) {
             this.newEmail = newEmail;
             return this;
         }
-        public Builder withOldEmail(String oldEmail) {
-            this.oldEmail = oldEmail;
+        public Builder withCurrentEmail(String currentEmail) {
+            this.currentEmail = currentEmail;
             return this;
         }
         public Builder withFirstName(String firstName) {
@@ -52,8 +52,8 @@ public class UpdateUserParams {
         return newEmail;
     }
 
-    public String getOldEmail() {
-        return oldEmail;
+    public String getCurrentEmail() {
+        return currentEmail;
     }
 
     public String getFirstName() {
