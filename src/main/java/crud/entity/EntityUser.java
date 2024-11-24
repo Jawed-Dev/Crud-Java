@@ -1,9 +1,9 @@
-package crud.model;
+package crud.entity;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public class ModelUser {
+public class EntityUser {
     private int id;
     private String lastName;
     private String firstName;
@@ -13,14 +13,14 @@ public class ModelUser {
 
 
     // constructor
-    public ModelUser(String firstName, String lastName, String email) {
+    public EntityUser(String firstName, String lastName, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.isUserActive = true;
     }
 
-    public ModelUser() {}
+    public EntityUser() {}
 
     // methods
     @Override
@@ -35,8 +35,8 @@ public class ModelUser {
 
 
 
-    public static ModelUser fromResultSet(ResultSet resultSet) throws SQLException {
-        ModelUser user = new ModelUser();
+    public static EntityUser fromResultSet(ResultSet resultSet) throws SQLException {
+        EntityUser user = new EntityUser();
         user.updateId(resultSet.getInt("user_id"));
         user.updateLastName(resultSet.getString("user_last_name"));
         user.updateFirstName(resultSet.getString("user_first_name"));
