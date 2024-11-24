@@ -1,6 +1,8 @@
 package crud.service;
 import crud.dao.DaoUser;
-import crud.model.ModelUser;
+import crud.validation.ValidationUser;
+import crud.validation.ValidationResult;
+import crud.entity.EntityUser;
 import crud.param.SearchUserByParams;
 import crud.param.UpdateUserParams;
 
@@ -8,39 +10,111 @@ import java.util.List;
 
 public class ServiceUser {
     private final DaoUser daoUser;
-
-    public ServiceUser(DaoUser daoUser) {
+    private final ValidationUser validationUser;
+    public ServiceUser(DaoUser daoUser, ValidationUser validationUser) {
         this.daoUser = daoUser;
+        this.validationUser = validationUser;
     }
 
-    public boolean addUser(ModelUser modelUser) {
+    public boolean addUser(EntityUser entityUser) {
         try {
-            boolean isUserExist = this.isUserExistingByEmail(modelUser.getEmail());
-            if(isUserExist) {
-                System.out.println("Cet email existe déjà.");
+            ValidationResult stateValidation = validationUser.validateAddUser(entityUser);
+            if(!stateValidation.isValid()) {
+                System.out.println(stateValidation.getErrorMessage());
                 return false;
             }
-            return daoUser.addUser(modelUser);
+            boolean isRequestDBSuccess = daoUser.addUser(entityUser);
+            if(!isRequestDBSuccess) {
+                System.out.println(ValidationUser.ERR_ADD_USER);
+                return false;
+            }
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
-        return false;
+        return true;
     }
 
-    public boolean isUserExistingByEmail(String email) {
-        try  {
-            return daoUser.isUserExistingByEmail(email);
+    /**
+     *
+     * @param entityUser The user entity used for loading the user details from the database.
+     *                    This object is populated with the user's data if successfully loaded,
+     *                    which can be used in views or for additional processing.
+     */
+    public boolean deleteUser(EntityUser entityUser, String email) {
+        try {
+            ValidationResult stateValidation = validationUser.validateDeleteUser(email);
+            if(!stateValidation.isValid()) {
+                System.out.println(stateValidation.getErrorMessage());
+                return false;
+            }
+
+            if(!this.loadModelUserByEmail(entityUser, email)) {
+                System.out.println(ValidationUser.ERR_LOAD_MODEL_USER);
+                return false;
+            }
+
+            boolean isRequestDBSuccess = daoUser.deleteUser(entityUser);
+            if(!isRequestDBSuccess) {
+                System.out.println(ValidationUser.ERR_DELETE_USER);
+                return false;
+            }
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
-        return false;
+        return true;
     }
-    
+
+    /**
+     *
+     * @param entityUser The user entity used for loading the user details from the database.
+     *                    This object is populated with the user's data if successfully loaded,
+     *                    which can be used in views or for additional processing.
+     */
+    public boolean updateUser(EntityUser entityUser, UpdateUserParams params) {
+        try {
+            ValidationResult stateValidation = validationUser.validateUpdateUser(params);
+            if(!stateValidation.isValid()) {
+                System.out.println(stateValidation.getErrorMessage());
+                return false;
+            }
+
+            if(!this.loadModelUserByEmail(entityUser, params.getCurrentEmail())) {
+                System.out.print(ValidationUser.ERR_LOAD_MODEL_USER);
+                return false;
+            }
+
+            boolean isRequestDBSuccess = daoUser.updateUser(entityUser, params);
+            if(!isRequestDBSuccess) {
+                System.out.print(ValidationUser.ERR_UPDATE_USER);
+                return false;
+            }
+        }
+        catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+        return true;
+    }
+
+    public List<EntityUser> getAllUsers() {
+        return this.daoUser.getAllUsers();
+    }
+
+    public List<EntityUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
+        if(!validationUser.validateGetUsersBySearch(searchUserByParams).isValid()) return null;
+        return this.daoUser.getUsersBySearch(searchUserByParams);
+    }
+
+    public boolean deleteAllUsers() {
+        return this.daoUser.deleteAllUsers();
+    }
+
     public Integer getUserIdByEmail(String email) {
         try {
-            return daoUser.getUserIdByEmail(email);
+            Integer idUser = daoUser.getUserIdByEmail(email);
+            ValidationResult stateValidation = validationUser.validateGetUserIdByEmail(idUser);
+            if(!stateValidation.isValid()) return null;
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -48,69 +122,18 @@ public class ServiceUser {
         return null;
     }
 
-    public boolean loadModelUserByEmail(ModelUser modelUser, String email) {
+    public boolean loadModelUserByEmail(EntityUser entityUser, String email) {
         try {
             // Cause Model not loaded before, we need user ID sql here
             int userId = this.getUserIdByEmail(email);
             if(userId < 1) return false;
 
-            return daoUser.loadModelUserByEmail(modelUser, userId);
+            return daoUser.loadModelUserByEmail(entityUser, userId);
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
         return false;
-    }
-
-    public boolean deleteUser(ModelUser modelUser, String email) {
-        try {
-            boolean isUserExist = this.isUserExistingByEmail(email);
-            if(!isUserExist) {
-                System.out.println("Aucun utilisateur n'existe à cet email.");
-                return false;
-            }
-            boolean isUserLoaded = this.loadModelUserByEmail(modelUser, email);
-            if(!isUserLoaded) {
-                System.out.println("Le chargement de l'utilisateur a échoué.");
-                return false;
-            }
-            return daoUser.deleteUser(modelUser);
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean updateEmail(ModelUser modelUser, UpdateUserParams params) {
-        try {
-            boolean isUserExist = this.isUserExistingByEmail(params.getCurrentEmail());
-            if(!isUserExist) {
-                System.out.println("Aucun utilisateur n'existe à cet email.");
-                return false;
-            }
-            boolean isUserLoaded = this.loadModelUserByEmail(modelUser, params.getCurrentEmail());
-            if(!isUserLoaded) {
-                System.out.println("Le chargement de l'utilisateur a échoué.");
-                return false;
-            }
-            return daoUser.updateEmail(modelUser, params);
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-        return false;
-    }
-
-    public List<ModelUser> getAllUsers() {
-        return this.daoUser.getAllUsers();
-    }
-
-    public List<ModelUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
-        return this.daoUser.getUsersBySearch(searchUserByParams);
-    }
-
-    public boolean deleteAllUsers() {
-        return this.daoUser.deleteAllUsers();
     }
 }
+

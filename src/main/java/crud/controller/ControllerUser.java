@@ -1,8 +1,9 @@
 package crud.controller;
+import crud.validation.ValidationResult;
 import crud.param.SearchUserByParams;
 import crud.param.UpdateUserParams;
 import crud.service.ServiceUser;
-import crud.model.ModelUser;
+import crud.entity.EntityUser;
 import crud.view.ViewUser;
 
 import java.util.List;
@@ -17,63 +18,56 @@ public class ControllerUser {
         this.viewUser = viewUser;
     }
 
-    public boolean addUser(ModelUser modelUser) {
-        boolean isUserAdded = this.serviceUser.addUser(modelUser);
-        if(!isUserAdded) {
-            this.viewUser.renderMessageConsole("L'ajout de l'utilisateur n'a pas été effectué.");
-            return false;
-        }
+    public void addUser(EntityUser entityUser) {
+        boolean isSuccessRequest = this.serviceUser.addUser(entityUser);
+        if(!isSuccessRequest) return;
 
-        String message = String.format("L'ajout de l'utilisateur a été effectué avec succès : ID:%d Prénom: %s, Nom: %s, Email: %s",
-            modelUser.getId(), modelUser.getFirstName(), modelUser.getLastName(), modelUser.getEmail());
+        String message = String.format("L'ajout de l'utilisateur a été effectué avec succès : " +
+                        "ID:%d Prénom: %s, Nom: %s, Email: %s",
+        entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
         this.viewUser.renderMessageConsole(message);
-        return true;
     }
 
-    public boolean deleteUser(ModelUser modelUser, String email) {
-        boolean isUserDeleted = this.serviceUser.deleteUser(modelUser, email);
-        if(!isUserDeleted) {
-            this.viewUser.renderMessageConsole("La suppression de l'utilisateur a échoué.");
-            return false;
-        }
+    public void deleteUser(EntityUser entityUser, String email) {
+        boolean isSuccessRequest = this.serviceUser.deleteUser(entityUser, email);
+        if(!isSuccessRequest) return;
 
-        String message = String.format("La suppression de l'utilisateur a été effectué avec succès : ID:%d Prénom: %s, Nom: %s, Email: %s",
-             modelUser.getId(), modelUser.getFirstName(), modelUser.getLastName(), modelUser.getEmail());
+        String message = String.format("La suppression de l'utilisateur a été effectué avec succès : " +
+                        "ID:%d Prénom: %s, Nom: %s, Email: %s",
+             entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
         this.viewUser.renderMessageConsole(message);
-        return true;
     }
 
-    public boolean updateUser(ModelUser modelUser, UpdateUserParams params) {
-        boolean isEmailUpdated = this.serviceUser.updateEmail(modelUser, params);
-        if(!isEmailUpdated) {
-            this.viewUser.renderMessageConsole("La mise à jour de l'email de l'utilisateur a échoué.");
-            return false;
-        }
+    public void updateUser(EntityUser entityUser, UpdateUserParams params) {
+        boolean isSuccessRequest = this.serviceUser.updateUser(entityUser, params);
+        if(!isSuccessRequest) return;
 
-        String message = String.format("La mise à jour de l'email de l'utilisateur a été effectué avec succès : ID:%d Nouvel email: %s Ancien email: %s",
-            modelUser.getId(), modelUser.getEmail(), params.getNewEmail());
+        String message = String.format("La mise à jour de l'email de l'utilisateur a été effectué avec succès : " +
+                        "ID:%d Nouvel email: %s Ancien email: %s",
+                entityUser.getId(), entityUser.getEmail(), params.getNewEmail());
         this.viewUser.renderMessageConsole(message);
-        return true;
     }
 
     public void getAllUsers() {
-        List<ModelUser> users = this.serviceUser.getAllUsers();
-        for (ModelUser user : users) {
+        List<EntityUser> users = this.serviceUser.getAllUsers();
+        for (EntityUser user : users) {
             this.viewUser.renderObjectConsole(user);
         }
     }
 
     public void getUsersBySearch (SearchUserByParams searchUserByParams) {
-        List<ModelUser> users = this.serviceUser.getUsersBySearch(searchUserByParams);
-        for (ModelUser user : users) {
+        List<EntityUser> users = this.serviceUser.getUsersBySearch(searchUserByParams);
+        if(users == null) return;
+        for (EntityUser user : users) {
             this.viewUser.renderObjectConsole(user);
         }
     }
 
-    public boolean deleteAllUsers() {
+    public void deleteAllUsers() {
         boolean isUsersDeleted = this.serviceUser.deleteAllUsers();
-        String message = (isUsersDeleted) ? "Les utilisateurs ont été réinitialisés" : "Les utilisateurs n'ont pas été réinitialisés";
-        this.viewUser.renderMessageConsole(message);
-        return isUsersDeleted;
+        if(isUsersDeleted) {
+            this.viewUser.renderMessageConsole("Les utilisateurs ont été réinitialisés");
+        }
+        this.viewUser.renderMessageConsole( "Les utilisateurs n'ont pas été réinitialisés");
     }
 }
