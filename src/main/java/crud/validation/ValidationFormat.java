@@ -1,5 +1,7 @@
 package crud.validation;
 
+import crud.entity.EntityUser;
+
 import java.util.regex.Pattern;
 
 public class ValidationFormat {
@@ -27,5 +29,11 @@ public class ValidationFormat {
         return id > 0;
     }
 
+    public boolean isValidEntityUser(EntityUser entityUser) {
+        if(entityUser == null) {
+            return false;
+        }
+        return true;
+    }
 
 }

@@ -1,8 +1,8 @@
 package crud.validation;
 import crud.dao.DaoUser;
 import crud.entity.EntityUser;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
 
 public class ValidationUser {
     private final ValidationFormat validationFormat;
@@ -18,8 +18,12 @@ public class ValidationUser {
     public static String ERR_EMAIL_INVALID = "Le format de cet email est invalide.";
     public static String ERR_FIRSTNAME_INVALID = "Le format du prénom est invalide..";
     public static String ERR_LASTNAME_INVALID = "Le format du nom est invalide.";
-    public static String ERR_IDUSER_INVALID = "Le format de l'identifiant de l'utilisateur est invalide.";
+    public static String ERR_ID_USER_INVALID = "Le format de l'identifiant de l'utilisateur est invalide.";
     public static String ERR_FORMS_EMPTY = "Tous les champs sont vides";
+    public static String ERR_DAO_NOT_SUCCESS = "Une erreur est survenue avec la requête DAO";
+    public static String ERR_DEPENDENCIES = "Une erreur est survenue au niveau des dépendances";
+    public static String ERR_ENTITY_USER = "Une erreur est survenue au niveau de l'entité User";
+    public static int MINIMUM_ID_USER = 1;
 
     public ValidationUser(ValidationFormat validationFormat, DaoUser daoUser) {
         this.validationFormat = validationFormat;
@@ -27,6 +31,12 @@ public class ValidationUser {
     }
 
     public ValidationResult validateAddUser(EntityUser entityUser) {
+        if(!AreDependenciesValid()) {
+            return new ValidationResult(false, ERR_DEPENDENCIES);
+        }
+        if(!validationFormat.isValidEntityUser(entityUser)) {
+            return new ValidationResult(false, ERR_ENTITY_USER);
+        }
         if(daoUser.isEmailAlreadyUsed(entityUser.getEmail())) {
             return new ValidationResult(false, ERR_EMAIL_USED);
         }
@@ -43,16 +53,26 @@ public class ValidationUser {
     }
 
     public ValidationResult validateDeleteUser(String email) {
-        if(!validationFormat.isValidEmail(email)) return new ValidationResult(false, ERR_EMAIL_INVALID);
-        if(!daoUser.isEmailAlreadyUsed(email)) return new ValidationResult(false, ERR_EMAIL_NOT_USED);
+        if(!AreDependenciesValid()) {
+            return new ValidationResult(false, ERR_DEPENDENCIES);
+        }
+        if(!validationFormat.isValidEmail(email)) {
+            return new ValidationResult(false, ERR_EMAIL_INVALID);
+        }
+        if(!daoUser.isEmailAlreadyUsed(email)) {
+            return new ValidationResult(false, ERR_EMAIL_NOT_USED);
+        }
         return new ValidationResult(true);
     }
 
-    public ValidationResult validateUpdateUser(UpdateUserParams updateUserParams) {
-        String currentEmail = updateUserParams.getCurrentEmail();
-        String firstName = updateUserParams.getFirstName();
-        String lastName = updateUserParams.getLastName();
+    public ValidationResult validateUpdateUser(ParamsUpdateUser paramsUpdateUser) {
+        String currentEmail = paramsUpdateUser.getCurrentEmail();
+        String firstName = paramsUpdateUser.getFirstName();
+        String lastName = paramsUpdateUser.getLastName();
 
+        if(!AreDependenciesValid()) {
+            return new ValidationResult(false, ERR_DEPENDENCIES);
+        }
         if(!daoUser.isEmailAlreadyUsed(currentEmail)) {
             return new ValidationResult(false, ERR_EMAIL_NOT_USED);
         }
@@ -72,11 +92,14 @@ public class ValidationUser {
         return new ValidationResult(true);
     }
 
-    public ValidationResult validateGetUsersBySearch(SearchUserByParams searchUserByParams) {
-        String email = searchUserByParams.getEmail();
-        String firstName = searchUserByParams.getFirstName();
-        String lastName = searchUserByParams.getLastName();
+    public ValidationResult validateGetUsersBySearch(ParamsSearchUser paramsSearchUser) {
+        String email = paramsSearchUser.getEmail();
+        String firstName = paramsSearchUser.getFirstName();
+        String lastName = paramsSearchUser.getLastName();
 
+        if(!AreDependenciesValid()) {
+            return new ValidationResult(false, ERR_DEPENDENCIES);
+        }
         if(email != null && !validationFormat.isValidEmail(email)) {
             return new ValidationResult(false, ERR_EMAIL_INVALID);
         }
@@ -94,10 +117,13 @@ public class ValidationUser {
     }
 
     public ValidationResult validateGetUserIdByEmail(Integer idUser) {
-        return null;
+        if(idUser < MINIMUM_ID_USER) {
+            return new ValidationResult(false, ERR_ID_USER_INVALID);
+        }
+        return new ValidationResult(true);
     }
 
-    public boolean isValidUser(EntityUser entityUser) {
-        return true;
+    private boolean AreDependenciesValid() {
+        return this.validationFormat != null && this.daoUser != null;
     }
 }

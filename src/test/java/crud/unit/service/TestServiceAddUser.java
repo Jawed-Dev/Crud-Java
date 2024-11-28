@@ -1,7 +1,7 @@
 package crud.unit.service;
 
 import crud.entity.EntityUser;
-import crud.ServiceUser;
+import crud.service.ServiceUser;
 import crud.validation.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,10 +71,10 @@ public class TestServiceAddUser {
     }
 
     @Test
-    public void shouldAddUserInvalidByRequestDaoNotSuccess() {
+    public void shouldAddUserInvalidByRequestDaoThrowException() {
         EntityUser entityUser = new EntityUser("Jawed", "Test", "valid-email@gmail.com");
         when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(true));
-        when(daoUser.addUser(entityUser)).thenReturn(false);
+        when(daoUser.addUser(entityUser)).thenThrow(new RuntimeException("Error"));
         boolean result = serviceUser.addUser(entityUser);
         assertFalse(result);
         verify(validationUser).validateAddUser(entityUser);

@@ -6,9 +6,9 @@ import crud.database.DatabaseConnection;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationFormat;
 import crud.entity.EntityUser;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
-import crud.ServiceUser;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
+import crud.service.ServiceUser;
 import crud.view.ViewUser;
 
 public class RouterUser {
@@ -35,17 +35,17 @@ public class RouterUser {
         this.controllerUser.deleteUser(entityUser, email);
     }
 
-    public void updateUser(UpdateUserParams updateUserParams) {
+    public void updateUser(ParamsUpdateUser paramsUpdateUser) {
         EntityUser entityUser = new EntityUser();
-        this.controllerUser.updateUser(entityUser, updateUserParams);
+        this.controllerUser.updateUser(entityUser, paramsUpdateUser);
     }
 
     public void getAllUsers() {
         this.controllerUser.getAllUsers ();
     }
 
-    public void getUsersBySearch(SearchUserByParams searchUserByParams) {
-        this.controllerUser.getUsersBySearch(searchUserByParams);
+    public void getUsersBySearch(ParamsSearchUser paramsSearchUser) {
+        this.controllerUser.getUsersBySearch(paramsSearchUser);
     }
 
     public void deleteAllUsers() {
