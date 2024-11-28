@@ -1,7 +1,7 @@
 package crud.controller;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
-import crud.ServiceUser;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
+import crud.service.ServiceUser;
 import crud.entity.EntityUser;
 import crud.view.ViewUser;
 
@@ -39,7 +39,7 @@ public class ControllerUser {
         this.viewUser.renderMessageConsole(message);
     }
 
-    public void updateUser(EntityUser entityUser, UpdateUserParams params) {
+    public void updateUser(EntityUser entityUser, ParamsUpdateUser params) {
         boolean isSuccessRequest = this.serviceUser.updateUser(entityUser, params);
         if(!isSuccessRequest) return;
 
@@ -56,8 +56,8 @@ public class ControllerUser {
         }
     }
 
-    public void getUsersBySearch (SearchUserByParams searchUserByParams) {
-        List<EntityUser> users = this.serviceUser.getUsersBySearch(searchUserByParams);
+    public void getUsersBySearch (ParamsSearchUser paramsSearchUser) {
+        List<EntityUser> users = this.serviceUser.getUsersBySearch(paramsSearchUser);
         if(users == null) return;
         for (EntityUser user : users) {
             this.viewUser.renderObjectConsole(user);

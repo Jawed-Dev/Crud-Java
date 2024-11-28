@@ -1,10 +1,10 @@
-package crud;
+package crud.service;
 import crud.dao.DaoUser;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationResult;
 import crud.entity.EntityUser;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
 
 import java.util.List;
 
@@ -31,6 +31,7 @@ public class ServiceUser {
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            return false;
         }
         return true;
     }
@@ -72,7 +73,7 @@ public class ServiceUser {
      *                    This object is populated with the user's data if successfully loaded,
      *                    which can be used in views or for additional processing.
      */
-    public boolean updateUser(EntityUser entityUser, UpdateUserParams params) {
+    public boolean updateUser(EntityUser entityUser, ParamsUpdateUser params) {
         try {
             ValidationResult stateValidation = validationUser.validateUpdateUser(params);
             if(!stateValidation.isValid()) {
@@ -101,9 +102,9 @@ public class ServiceUser {
         return this.daoUser.getAllUsers();
     }
 
-    public List<EntityUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
-        if(!validationUser.validateGetUsersBySearch(searchUserByParams).isValid()) return null;
-        return this.daoUser.getUsersBySearch(searchUserByParams);
+    public List<EntityUser> getUsersBySearch(ParamsSearchUser paramsSearchUser) {
+        if(!validationUser.validateGetUsersBySearch(paramsSearchUser).isValid()) return null;
+        return this.daoUser.getUsersBySearch(paramsSearchUser);
     }
 
     public boolean deleteAllUsers() {

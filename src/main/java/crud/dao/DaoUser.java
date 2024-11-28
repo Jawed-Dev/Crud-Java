@@ -1,8 +1,8 @@
 package crud.dao;
 import crud.database.DatabaseConnection;
 import crud.entity.EntityUser;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class DaoUser {
         }
     }
 
-    public List<EntityUser> getUsersBySearch(SearchUserByParams searchUserByParams) {
+    public List<EntityUser> getUsersBySearch(ParamsSearchUser paramsSearchUser) {
         /*
          * This method uses Builder pattern to create a dynamic SQL,
          * Depending on which parameters are provided, additional WHERE conditions are appended to the query.
@@ -67,17 +67,17 @@ public class DaoUser {
                         "WHERE 1=1 ");
 
         List<String> parameters = new ArrayList<>();
-        if(searchUserByParams.getFirstName() != null) {
+        if(paramsSearchUser.getFirstName() != null) {
             query.append("AND user_first_name LIKE ? ");
-            parameters.add("%" + searchUserByParams.getFirstName() + "%");
+            parameters.add("%" + paramsSearchUser.getFirstName() + "%");
         }
-        if(searchUserByParams.getLastName() != null) {
+        if(paramsSearchUser.getLastName() != null) {
             query.append("AND user_last_name LIKE ? ");
-            parameters.add("%" + searchUserByParams.getLastName() + "%");
+            parameters.add("%" + paramsSearchUser.getLastName() + "%");
         }
-        if(searchUserByParams.getEmail() != null) {
+        if(paramsSearchUser.getEmail() != null) {
             query.append("AND user_email LIKE ? ");
-            parameters.add("%" + searchUserByParams.getEmail() + "%");
+            parameters.add("%" + paramsSearchUser.getEmail() + "%");
         }
         List<EntityUser> users = new ArrayList<>();
         try(Connection connection = this.databaseConnection.getConnection();
@@ -98,7 +98,7 @@ public class DaoUser {
         return users;
     }
 
-    public boolean updateUser(EntityUser entityUser, UpdateUserParams params) {
+    public boolean updateUser(EntityUser entityUser, ParamsUpdateUser params) {
 
         // The Builder pattern was not used here as it was simpler to directly retrieve values based on conditions.
         String query = "UPDATE user SET user_first_name = ?, user_last_name = ?,  user_email = ?, user_active = ?  " +

@@ -1,9 +1,7 @@
 package crud.simulation;
-import crud.param.SearchUserByParams;
-import crud.param.UpdateUserParams;
+import crud.param.ParamsSearchUser;
+import crud.param.ParamsUpdateUser;
 import crud.router.RouterUser;
-
-import java.awt.*;
 
 
 /**
@@ -26,7 +24,7 @@ public class Simulation {
 
         this.routerUser.addUser("Jawed", "bouta", currentEmail);
 
-        UpdateUserParams params = new UpdateUserParams.Builder()
+        ParamsUpdateUser params = new ParamsUpdateUser.Builder()
         .withFirstName("Jawed-new")
         .withCurrentEmail(currentEmail)
         .withNewEmail(newEmail)
@@ -59,11 +57,11 @@ public class Simulation {
      */
     public void simulation4() {
         this.underlineStrig(4);
-        SearchUserByParams searchUserByParams = new SearchUserByParams.Builder()
+        ParamsSearchUser paramsSearchUser = new ParamsSearchUser.Builder()
                 .withEmail("jawed.sim1.update@gmail.com")
                 .withFirstName("jawed")
                 .build();
-        this.routerUser.getUsersBySearch(searchUserByParams);
+        this.routerUser.getUsersBySearch(paramsSearchUser);
     }
 
     /**

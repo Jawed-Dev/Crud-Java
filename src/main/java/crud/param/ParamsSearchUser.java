@@ -1,11 +1,11 @@
 package crud.param;
 
-public class SearchUserByParams {
+public class ParamsSearchUser {
     private final String email;
     private final String firstName;
     private final String lastName;
 
-    public SearchUserByParams(Builder builder) {
+    public ParamsSearchUser(Builder builder) {
         this.email = builder.email;
         this.firstName = builder.firstName;
         this.lastName = builder.lastName;
@@ -32,8 +32,8 @@ public class SearchUserByParams {
             return this;
         }
 
-        public SearchUserByParams build() {
-            return new SearchUserByParams(this);
+        public ParamsSearchUser build() {
+            return new ParamsSearchUser(this);
         }
     }
 
