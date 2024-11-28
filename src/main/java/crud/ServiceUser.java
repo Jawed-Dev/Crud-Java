@@ -1,4 +1,4 @@
-package crud.service;
+package crud;
 import crud.dao.DaoUser;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationResult;

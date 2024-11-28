@@ -8,7 +8,7 @@ import crud.validation.ValidationFormat;
 import crud.entity.EntityUser;
 import crud.param.SearchUserByParams;
 import crud.param.UpdateUserParams;
-import crud.service.ServiceUser;
+import crud.ServiceUser;
 import crud.view.ViewUser;
 
 public class RouterUser {

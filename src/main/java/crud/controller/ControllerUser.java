@@ -1,8 +1,7 @@
 package crud.controller;
-import crud.validation.ValidationResult;
 import crud.param.SearchUserByParams;
 import crud.param.UpdateUserParams;
-import crud.service.ServiceUser;
+import crud.ServiceUser;
 import crud.entity.EntityUser;
 import crud.view.ViewUser;
 
@@ -18,14 +17,16 @@ public class ControllerUser {
         this.viewUser = viewUser;
     }
 
-    public void addUser(EntityUser entityUser) {
+    public boolean addUser(EntityUser entityUser) {
         boolean isSuccessRequest = this.serviceUser.addUser(entityUser);
-        if(!isSuccessRequest) return;
+        if(!isSuccessRequest) return false;
 
         String message = String.format("L'ajout de l'utilisateur a été effectué avec succès : " +
                         "ID:%d Prénom: %s, Nom: %s, Email: %s",
         entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
         this.viewUser.renderMessageConsole(message);
+
+        return true;
     }
 
     public void deleteUser(EntityUser entityUser, String email) {

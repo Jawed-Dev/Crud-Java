@@ -94,10 +94,10 @@ public class ValidationUser {
     }
 
     public ValidationResult validateGetUserIdByEmail(Integer idUser) {
-        if(!validationFormat.isValidId(idUser)) {
-            return new ValidationResult(false, ERR_IDUSER_INVALID);
-        }
-        return new ValidationResult(true);
+        return null;
     }
 
+    public boolean isValidUser(EntityUser entityUser) {
+        return true;
+    }
 }
