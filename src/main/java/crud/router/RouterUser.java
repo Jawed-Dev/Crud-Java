@@ -3,11 +3,13 @@ package crud.router;
 import crud.controller.ControllerUser;
 import crud.dao.DaoUser;
 import crud.database.DatabaseConnection;
+import crud.dto.DtoResponse;
+import crud.dto.DtoUser;
+import crud.mapper.MapperUser;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationFormat;
 import crud.entity.EntityUser;
-import crud.param.ParamsSearchUser;
-import crud.param.ParamsUpdateUser;
+import crud.param.ParamsUser;
 import crud.service.ServiceUser;
 import crud.view.ViewUser;
 
@@ -20,32 +22,30 @@ public class RouterUser {
         DaoUser daoUser = new DaoUser(databaseConnection);
         ValidationFormat validationFormat = new ValidationFormat();
         ValidationUser validationUser = new ValidationUser(validationFormat, daoUser);
-        ServiceUser serviceUser = new ServiceUser(daoUser, validationUser);
+        MapperUser mapperUser = new MapperUser();
+        ServiceUser serviceUser = new ServiceUser(daoUser, mapperUser, validationUser);
         ViewUser viewUser = new ViewUser();
         this.controllerUser = new ControllerUser(serviceUser, viewUser);
     }
 
-    public void addUser(String firstName, String lastName, String email) {
-        EntityUser entityUser = new EntityUser(firstName, lastName, email);
-        this.controllerUser.addUser(entityUser);
+    public DtoResponse<EntityUser> addUser(DtoUser dtoUser) {
+        return this.controllerUser.addUser(dtoUser);
     }
 
-    public void deleteUser(String email) {
-        EntityUser entityUser = new EntityUser();
-        this.controllerUser.deleteUser(entityUser, email);
+    public DtoResponse<EntityUser> deleteUser(DtoUser dtoUser) {
+        return this.controllerUser.deleteUser(dtoUser);
     }
 
-    public void updateUser(ParamsUpdateUser paramsUpdateUser) {
-        EntityUser entityUser = new EntityUser();
-        this.controllerUser.updateUser(entityUser, paramsUpdateUser);
+    public DtoResponse<EntityUser> updateUser(DtoUser dtoUser) {
+        return this.controllerUser.updateUser(dtoUser);
     }
 
     public void getAllUsers() {
         this.controllerUser.getAllUsers ();
     }
 
-    public void getUsersBySearch(ParamsSearchUser paramsSearchUser) {
-        this.controllerUser.getUsersBySearch(paramsSearchUser);
+    public void getUsersBySearch(DtoUser dtoUser) {
+        this.controllerUser.getUsersBySearch(dtoUser);
     }
 
     public void deleteAllUsers() {

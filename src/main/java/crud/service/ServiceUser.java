@@ -1,140 +1,122 @@
 package crud.service;
 import crud.dao.DaoUser;
+import crud.dto.DtoUser;
+import crud.mapper.MapperUser;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationResult;
 import crud.entity.EntityUser;
-import crud.param.ParamsSearchUser;
-import crud.param.ParamsUpdateUser;
 
 import java.util.List;
 
 public class ServiceUser {
     private final DaoUser daoUser;
+    private final MapperUser mapperUser;
     private final ValidationUser validationUser;
-    public ServiceUser(DaoUser daoUser, ValidationUser validationUser) {
+    public ServiceUser(DaoUser daoUser, MapperUser mapperUser, ValidationUser validationUser) {
         this.daoUser = daoUser;
+        this.mapperUser = mapperUser;
         this.validationUser = validationUser;
     }
 
-    public boolean addUser(EntityUser entityUser) {
+    public EntityUser addUser(DtoUser dtoUser) {
         try {
-            ValidationResult stateValidation = validationUser.validateAddUser(entityUser);
-            if(!stateValidation.isValid()) {
-                System.out.println(stateValidation.getErrorMessage());
-                return false;
-            }
-            boolean isRequestDBSuccess = daoUser.addUser(entityUser);
-            if(!isRequestDBSuccess) {
-                System.out.println(ValidationUser.ERR_ADD_USER);
-                return false;
-            }
+            ValidationResult dtoValidation = validationUser.validateAddUser(dtoUser);
+            if(!isValidationSuccess(dtoValidation)) return null;
+
+            EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
+            ValidationResult mapperValidation = validationUser.validateResultMapper(entityUser);
+            if(!isValidationSuccess(mapperValidation)) return null;
+
+            entityUser = daoUser.addUser(entityUser);
+            ValidationResult daoValidation = validationUser.validateResultDao(entityUser);
+            if(!isValidationSuccess(daoValidation)) return null;
+            return entityUser;
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
-            return false;
+            return null;
         }
-        return true;
     }
 
-    /**
-     *
-     * @param entityUser The user entity used for loading the user details from the database.
-     *                    This object is populated with the user's data if successfully loaded,
-     *                    which can be used in views or for additional processing.
-     */
-    public boolean deleteUser(EntityUser entityUser, String email) {
+    public EntityUser deleteUser(DtoUser dtoUser) {
         try {
-            ValidationResult stateValidation = validationUser.validateDeleteUser(email);
-            if(!stateValidation.isValid()) {
-                System.out.println(stateValidation.getErrorMessage());
-                return false;
-            }
 
-            if(!this.loadModelUserByEmail(entityUser, email)) {
-                System.out.println(ValidationUser.ERR_LOAD_MODEL_USER);
-                return false;
-            }
+            ValidationResult dtoValidation = validationUser.validateDeleteUser(dtoUser);
+            if(!isValidationSuccess(dtoValidation)) return null;
 
-            boolean isRequestDBSuccess = daoUser.deleteUser(entityUser);
-            if(!isRequestDBSuccess) {
-                System.out.println(ValidationUser.ERR_DELETE_USER);
-                return false;
-            }
+            EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
+            ValidationResult entityValidation = validationUser.validateResultMapper(entityUser);
+            if(!isValidationSuccess(entityValidation)) return null;
+
+            Integer idUser = daoUser.getUserIdByEmail(entityUser.getEmail());
+            ValidationResult idUserValidation = validationUser.validateIdUser(idUser);
+            if(!isValidationSuccess(idUserValidation)) return null;
+
+            entityUser.setId(idUser);
+
+            entityUser = daoUser.deleteUser(entityUser);
+            ValidationResult daoValidation = validationUser.validateResultDao(entityUser);
+            if(!isValidationSuccess(daoValidation)) return null;
+
+            return entityUser;
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            return null;
         }
-        return true;
     }
 
-    /**
-     *
-     * @param entityUser The user entity used for loading the user details from the database.
-     *                    This object is populated with the user's data if successfully loaded,
-     *                    which can be used in views or for additional processing.
-     */
-    public boolean updateUser(EntityUser entityUser, ParamsUpdateUser params) {
+    public EntityUser updateUser(DtoUser dtoUser) {
         try {
-            ValidationResult stateValidation = validationUser.validateUpdateUser(params);
-            if(!stateValidation.isValid()) {
-                System.out.println(stateValidation.getErrorMessage());
-                return false;
-            }
+            ValidationResult dtoValidation = validationUser.validateUpdateUser(dtoUser);
+            if(!isValidationSuccess(dtoValidation)) return null;
 
-            if(!this.loadModelUserByEmail(entityUser, params.getCurrentEmail())) {
-                System.out.print(ValidationUser.ERR_LOAD_MODEL_USER);
-                return false;
-            }
+            EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
+            ValidationResult mapperValidation = validationUser.validateResultMapper(entityUser);
+            if(!isValidationSuccess(mapperValidation)) return null;
 
-            boolean isRequestDBSuccess = daoUser.updateUser(entityUser, params);
-            if(!isRequestDBSuccess) {
-                System.out.print(ValidationUser.ERR_UPDATE_USER);
-                return false;
-            }
+            Integer idUser = daoUser.getUserIdByEmail(entityUser.getEmail());
+            ValidationResult idUserValidation = validationUser.validateIdUser(idUser);
+            if(!isValidationSuccess(idUserValidation)) return null;
+            entityUser.setId(idUser);
+
+            if(dtoUser.getNewEmail() != null) entityUser.setEmail(dtoUser.getNewEmail());
+            if(dtoUser.getNewFirstName() != null) entityUser.setFirstName(dtoUser.getNewFirstName());
+            if(dtoUser.getNewLastName() != null) entityUser.setLastName(dtoUser.getNewLastName());
+
+            entityUser = daoUser.updateUser(entityUser);
+            ValidationResult daoValidation = validationUser.validateIdUser(idUser);
+            if(!isValidationSuccess(daoValidation)) return null;
+            return entityUser;
         }
         catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            return null;
         }
-        return true;
     }
+
+    public List<EntityUser> getUsersBySearch(DtoUser dtoUser) {
+        ValidationResult dtoValidation = validationUser.validateGetUsersBySearch(dtoUser);
+        if(!isValidationSuccess(dtoValidation)) return null;
+        return this.daoUser.getUsersBySearch(dtoUser);
+    }
+
 
     public List<EntityUser> getAllUsers() {
         return this.daoUser.getAllUsers();
     }
 
-    public List<EntityUser> getUsersBySearch(ParamsSearchUser paramsSearchUser) {
-        if(!validationUser.validateGetUsersBySearch(paramsSearchUser).isValid()) return null;
-        return this.daoUser.getUsersBySearch(paramsSearchUser);
-    }
 
     public boolean deleteAllUsers() {
         return this.daoUser.deleteAllUsers();
     }
 
-    public Integer getUserIdByEmail(String email) {
-        try {
-            Integer idUser = daoUser.getUserIdByEmail(email);
-            ValidationResult stateValidation = validationUser.validateGetUserIdByEmail(idUser);
-            if(!stateValidation.isValid()) return null;
+    private boolean isValidationSuccess (ValidationResult validationResult) {
+        if (!validationResult.isValid()) {
+            System.out.println(validationResult.getErrorMessage());
+            return false;
         }
-        catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public boolean loadModelUserByEmail(EntityUser entityUser, String email) {
-        try {
-            // Cause Model not loaded before, we need user ID sql here
-            int userId = this.getUserIdByEmail(email);
-            if(userId < 1) return false;
-
-            return daoUser.loadModelUserByEmail(entityUser, userId);
-        }
-        catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-        return false;
+        return true;
     }
 }
 

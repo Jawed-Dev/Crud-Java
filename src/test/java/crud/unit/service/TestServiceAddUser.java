@@ -1,5 +1,9 @@
 package crud.unit.service;
 
+import crud.dto.DtoResponse;
+import crud.dto.DtoUser;
+import crud.mapper.MapperUser;
+import crud.param.ParamsUser;
 import crud.entity.EntityUser;
 import crud.service.ServiceUser;
 import crud.validation.ValidationResult;
@@ -7,13 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import crud.dao.DaoUser;
 import crud.validation.ValidationUser;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.sql.SQLException;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,56 +34,159 @@ public class TestServiceAddUser {
     @Mock
     private ValidationUser validationUser;
 
+    @Mock
+    private MapperUser mapperUser;
+
 
     @Test
     public void shouldAddUserValidWhenAllDataAreValid() {
-        EntityUser entityUser = new EntityUser("Jawed", "Test", "valid-email@gmail.com");
-        when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(true));
-        when(daoUser.addUser(entityUser)).thenReturn(true);
-        boolean result = serviceUser.addUser(entityUser);
-        assertTrue(result);
-        verify(validationUser).validateAddUser(entityUser);
-        verify(daoUser).addUser(entityUser);
+        String firstName = "Jawed";
+        String lastName = "Test";
+        String email = "valid-email@gmail.com";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(true));
+        when(mapperUser.dtoToEntityUser(dtoUser))
+                .thenReturn(mockedEntityUser);
+        when(daoUser.addUser(mockedEntityUser))
+                .thenReturn(mockedEntityUser);
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(mapperUser).dtoToEntityUser(dtoUser);
+        verify(daoUser).addUser(Mockito.any(EntityUser.class));
+
+        assertNotNull(entityUser);
+        assertEquals(entityUser.getFirstName(), firstName);
+        assertEquals(entityUser.getLastName(), lastName);
+        assertEquals(entityUser.getEmail(), email);
     }
+
 
     @Test
     public void shouldAddUserInvalidByEmail() {
-        EntityUser entityUser = new EntityUser("Jawed", "Test", "invalid-email@");
-        when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(false, ValidationUser.ERR_EMAIL_INVALID));
-        boolean result = serviceUser.addUser(entityUser);
-        assertFalse(result);
-        verify(validationUser).validateAddUser(entityUser);
-        verify(daoUser, never()).addUser(entityUser);
+        String firstName = "Jawed";
+        String lastName = "Test";
+        String email = "invalid-email@";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(false, ValidationUser.ERR_EMAIL_INVALID));
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(daoUser, never()).addUser(mockedEntityUser);
+        verify(mapperUser, never()).dtoToEntityUser(dtoUser);
+
+        assertNull(entityUser);
+    }
+
+    @Test
+    public void shouldAddUserInvalidByEmailAlreadyUsed() {
+        String firstName = "Jawed";
+        String lastName = "Test";
+        String email = "valid-email@gmail.com";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(false, ValidationUser.ERR_EMAIL_USED));
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(daoUser, never()).addUser(mockedEntityUser);
+        verify(mapperUser, never()).dtoToEntityUser(dtoUser);
+
+        assertNull(entityUser);
     }
 
     @Test
     public void shouldAddUserInvalidByFirstName() {
-        EntityUser entityUser = new EntityUser("Jawed1234", "Test", "valid-email@gmail.com");
-        when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(false, ValidationUser.ERR_FIRSTNAME_INVALID));
-        boolean result = serviceUser.addUser(entityUser);
-        assertFalse(result);
-        verify(validationUser).validateAddUser(entityUser);
-        verify(daoUser, never()).addUser(entityUser);
+        String firstName = "Jawed1234";
+        String lastName = "Test";
+        String email = "valid-email@gmail.com";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(false, ValidationUser.ERR_FIRSTNAME_INVALID));
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(daoUser, never()).addUser(mockedEntityUser);
+        verify(mapperUser, never()).dtoToEntityUser(dtoUser);
+
+        assertNull(entityUser);
     }
 
     @Test
     public void shouldAddUserInvalidByLastName() {
-        EntityUser entityUser = new EntityUser("Jawed", "Test1234", "valid-email@gmail.com");
-        when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(false, ValidationUser.ERR_LASTNAME_INVALID));
-        boolean result = serviceUser.addUser(entityUser);
-        assertFalse(result);
-        verify(validationUser).validateAddUser(entityUser);
-        verify(daoUser, never()).addUser(entityUser);
+        String firstName = "Jawed";
+        String lastName = "Test1234";
+        String email = "valid-email@gmail.com";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(false, ValidationUser.ERR_LASTNAME_INVALID));
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(daoUser, never()).addUser(mockedEntityUser);
+        verify(mapperUser, never()).dtoToEntityUser(dtoUser);
+
+        assertNull(entityUser);
     }
 
     @Test
     public void shouldAddUserInvalidByRequestDaoThrowException() {
-        EntityUser entityUser = new EntityUser("Jawed", "Test", "valid-email@gmail.com");
-        when(validationUser.validateAddUser(entityUser)).thenReturn(new ValidationResult(true));
-        when(daoUser.addUser(entityUser)).thenThrow(new RuntimeException("Error"));
-        boolean result = serviceUser.addUser(entityUser);
-        assertFalse(result);
-        verify(validationUser).validateAddUser(entityUser);
-        verify(daoUser).addUser(entityUser);
+        String firstName = "Jawed";
+        String lastName = "Test";
+        String email = "valid-email@gmail.com";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(true));
+        when(mapperUser.dtoToEntityUser(dtoUser))
+                .thenReturn(mockedEntityUser);
+        when(daoUser.addUser(mockedEntityUser))
+                .thenReturn(null);
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(mapperUser).dtoToEntityUser(dtoUser);
+        verify(daoUser).addUser(mockedEntityUser);
+
+        assertNull(entityUser);
+    }
+
+    @Test
+    public void shouldAddUserInvalidByAllDataEmpty() {
+        String firstName = "";
+        String lastName = "";
+        String email = "";
+        DtoUser dtoUser = new DtoUser(firstName,lastName, email);
+        EntityUser mockedEntityUser = new EntityUser(firstName, lastName, email);
+
+        when(validationUser.validateAddUser(dtoUser))
+                .thenReturn(new ValidationResult(false, ValidationUser.ERR_FORMS_EMPTY));
+
+        EntityUser entityUser = serviceUser.addUser(dtoUser);
+
+        verify(validationUser).validateAddUser(dtoUser);
+        verify(daoUser, never()).addUser(mockedEntityUser);
+        verify(mapperUser, never()).dtoToEntityUser(dtoUser);
+
+        assertNull(entityUser);
     }
 }

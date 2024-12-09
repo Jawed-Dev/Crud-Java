@@ -1,13 +1,13 @@
 package crud.param;
 
-public class ParamsUpdateUser {
+public class ParamsUser {
     private final String newEmail;
     private final String firstName;
     private final String lastName;
     private final Boolean userActive;
     private final String currentEmail;
 
-    private ParamsUpdateUser(Builder builder) {
+    private ParamsUser(Builder builder) {
         this.newEmail = builder.newEmail;
         this.currentEmail = builder.currentEmail;
         this.firstName = builder.firstName;
@@ -16,11 +16,11 @@ public class ParamsUpdateUser {
     }
 
     public static class Builder {
-        private String newEmail;
         private String firstName;
         private String lastName;
         private Boolean userActive;
         private String currentEmail;
+        private String newEmail;
 
         public Builder withNewEmail(String newEmail) {
             this.newEmail = newEmail;
@@ -43,8 +43,8 @@ public class ParamsUpdateUser {
             return this;
         }
 
-        public ParamsUpdateUser build() {
-            return new ParamsUpdateUser(this);
+        public ParamsUser build() {
+            return new ParamsUser(this);
         }
     }
 

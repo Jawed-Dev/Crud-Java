@@ -34,13 +34,12 @@ public class EntityUser {
     }
 
 
-
     public static EntityUser fromResultSet(ResultSet resultSet) throws SQLException {
         EntityUser user = new EntityUser();
-        user.updateId(resultSet.getInt("user_id"));
-        user.updateLastName(resultSet.getString("user_last_name"));
-        user.updateFirstName(resultSet.getString("user_first_name"));
-        user.updateEmail(resultSet.getString("user_email"));
+        user.setId(resultSet.getInt("user_id"));
+        user.setLastName(resultSet.getString("user_last_name"));
+        user.setFirstName(resultSet.getString("user_first_name"));
+        user.setEmail(resultSet.getString("user_email"));
         return user;
     }
 
@@ -60,33 +59,32 @@ public class EntityUser {
     public Boolean isUserActive() {
         return this.isUserActive;
     }
-
-    // setters
-    public void updateLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void updateFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
     public Timestamp getCreateAt() {
         return createAt;
     }
 
-    public void updateEmail(String email) {
+    // setters
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    public void updateId(int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public void updateUserActive(boolean active) {
+    public void setUserActive(boolean active) {
         this.isUserActive = active;
     }
 
-    public void updateCreateAt(Timestamp timestamp) {
+    public void setCreateAt(Timestamp timestamp) {
         this.createAt = timestamp;
     }
 

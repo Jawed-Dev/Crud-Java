@@ -1,6 +1,8 @@
 package crud.controller;
-import crud.param.ParamsSearchUser;
-import crud.param.ParamsUpdateUser;
+import crud.dao.DaoUser;
+import crud.dto.DtoResponse;
+import crud.dto.DtoUser;
+import crud.param.ParamsUser;
 import crud.service.ServiceUser;
 import crud.entity.EntityUser;
 import crud.view.ViewUser;
@@ -17,36 +19,34 @@ public class ControllerUser {
         this.viewUser = viewUser;
     }
 
-    public boolean addUser(EntityUser entityUser) {
-        boolean isSuccessRequest = this.serviceUser.addUser(entityUser);
-        if(!isSuccessRequest) return false;
+    public DtoResponse<EntityUser> addUser(DtoUser dtoUser) {
+        EntityUser entityUser = this.serviceUser.addUser(dtoUser);
+        if(entityUser == null) {
+            return new DtoResponse<>(false, "Echec de l'ajout de l'utilisateur.");
+        }
+        String message = String.format("L'ajout de l'utilisateur a été effectué avec succès : ID:%d Prénom: %s, Nom: %s, Email: %s",
+            entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
 
-        String message = String.format("L'ajout de l'utilisateur a été effectué avec succès : " +
-                        "ID:%d Prénom: %s, Nom: %s, Email: %s",
-        entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
-        this.viewUser.renderMessageConsole(message);
-
-        return true;
+        return new DtoResponse<>(true, message, entityUser);
     }
 
-    public void deleteUser(EntityUser entityUser, String email) {
-        boolean isSuccessRequest = this.serviceUser.deleteUser(entityUser, email);
-        if(!isSuccessRequest) return;
-
-        String message = String.format("La suppression de l'utilisateur a été effectué avec succès : " +
-                        "ID:%d Prénom: %s, Nom: %s, Email: %s",
+    public DtoResponse<EntityUser> deleteUser(DtoUser dtoUser) {
+        EntityUser entityUser = this.serviceUser.deleteUser(dtoUser);
+        if(entityUser == null) {
+            return new DtoResponse<>(false, "Echec de la suppression de l'utilisateur.");
+        }
+        String message = String.format("La suppression de l'utilisateur a été effectué avec succès : ID:%d Prénom: %s, Nom: %s, Email: %s",
              entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
-        this.viewUser.renderMessageConsole(message);
+        return new DtoResponse<>(true, message, entityUser);
     }
 
-    public void updateUser(EntityUser entityUser, ParamsUpdateUser params) {
-        boolean isSuccessRequest = this.serviceUser.updateUser(entityUser, params);
-        if(!isSuccessRequest) return;
-
-        String message = String.format("La mise à jour de l'email de l'utilisateur a été effectué avec succès : " +
-                        "ID:%d Nouvel email: %s Ancien email: %s",
-                entityUser.getId(), entityUser.getEmail(), params.getNewEmail());
-        this.viewUser.renderMessageConsole(message);
+    public DtoResponse<EntityUser> updateUser(DtoUser dtoUser) {
+        EntityUser entityUser = this.serviceUser.updateUser(dtoUser);
+        if(entityUser == null) {
+            return new DtoResponse<>(false, "Echec de la mise à jour de l'utilisateur.");
+        }
+        String message = "La mise à jour de l'email de l'utilisateur a été effectué avec succès.";
+        return new DtoResponse<>(true, message, entityUser);
     }
 
     public void getAllUsers() {
@@ -56,11 +56,11 @@ public class ControllerUser {
         }
     }
 
-    public void getUsersBySearch (ParamsSearchUser paramsSearchUser) {
-        List<EntityUser> users = this.serviceUser.getUsersBySearch(paramsSearchUser);
+    public void getUsersBySearch (DtoUser dtoUser) {
+        List<EntityUser> users = this.serviceUser.getUsersBySearch(dtoUser);
         if(users == null) return;
         for (EntityUser user : users) {
-            this.viewUser.renderObjectConsole(user);
+            if(user != null) this.viewUser.renderObjectConsole(user);
         }
     }
 
