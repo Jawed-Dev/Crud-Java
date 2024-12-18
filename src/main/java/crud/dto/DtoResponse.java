@@ -4,17 +4,19 @@ public class DtoResponse <T> {
     private boolean success;
     private String message;
     private T data;
-
-    public DtoResponse(boolean success, String message) {
-        this.success = success;
-        this.message = message;
-        this.data = null;
-    }
+    private String errorCode;
 
     public DtoResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;
         this.data = data;
+        this.errorCode = null;
+    }
+
+    public DtoResponse(boolean success, String errorCode) {
+        this.success = success;
+        this.message = "";
+        this.errorCode = errorCode;
     }
 
     // Getters
@@ -30,6 +32,10 @@ public class DtoResponse <T> {
         return data;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
     // Setters
     public void setSuccess(boolean success) {
         this.success = success;
@@ -41,5 +47,9 @@ public class DtoResponse <T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public void setErrorCode(String codeError) {
+        this.errorCode = codeError;
     }
 }

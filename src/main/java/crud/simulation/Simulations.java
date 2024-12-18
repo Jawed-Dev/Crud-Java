@@ -2,17 +2,16 @@ package crud.simulation;
 import crud.dto.DtoResponse;
 import crud.dto.DtoUser;
 import crud.entity.EntityUser;
-import crud.param.ParamsUser;
 import crud.router.RouterUser;
 
 
 /**
  * This class permit to simulate requests HTTP
  */
-public class Simulation {
+public class Simulations {
     private final RouterUser routerUser;
 
-    public Simulation() {
+    public Simulations() {
         this.routerUser = new RouterUser();
     }
 

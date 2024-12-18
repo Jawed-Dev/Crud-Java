@@ -1,13 +1,13 @@
 
-import crud.simulation.Simulation;
+import crud.simulation.Simulations;
 
 public class Main {
     public static void main(String[] args) {
-        Simulation simulation = new Simulation();
-        simulation.clearSimulations();
-        simulation.simulation1();
-        simulation.simulation2();
-        simulation.simulation3();
-        simulation.simulation4();
+        Simulations simulations = new Simulations();
+        simulations.clearSimulations();
+        simulations.simulation1();
+        simulations.simulation2();
+        simulations.simulation3();
+        simulations.simulation4();
     }
 }

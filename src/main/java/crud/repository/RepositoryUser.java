@@ -1,21 +1,20 @@
-package crud.dao;
+package crud.repository;
 import crud.database.DatabaseConnection;
 import crud.dto.DtoUser;
 import crud.entity.EntityUser;
-import crud.param.ParamsUser;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DaoUser {
+public class RepositoryUser {
     private final DatabaseConnection databaseConnection;
 
-    public DaoUser(DatabaseConnection databaseConnection) {
+    public RepositoryUser(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
 
-    public EntityUser addUser(EntityUser entityUser) {
+    public EntityUser add(EntityUser entityUser) {
         String query = "INSERT INTO user (user_first_name, user_last_name, user_email, user_create_at) VALUES (?, ?, ?, ?)";
         try (Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,38 +27,41 @@ public class DaoUser {
             preparedStatement.setTimestamp(4, timestamp);
 
             int affectedRows = preparedStatement.executeUpdate();
-            if(affectedRows == 0) throw new SQLException("Erreur dans l'obtention de l'ID de l'utilisateur.");
-
-            // set userID in Entity
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (!generatedKeys.next()) throw new SQLException("ID user non obtenu.");
-                entityUser.setId(generatedKeys.getInt(1));
+            if(affectedRows == 0) {
+                throw new RepositoryException("Échec de la création de l'utilisateur.");
             }
 
+            // for set userID in Entity
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                if (!generatedKeys.next()) {
+                    throw new RepositoryException("Impossible de récupérer l'ID de l'utilisateur.");
+                }
+                entityUser.setId(generatedKeys.getInt(1));
+            }
             return entityUser;
         }
-        catch (SQLException error) {
-            System.err.println("SQL Error: " + error.getMessage());
-            return null;
+        catch (SQLException e) {
+            throw new RepositoryException("Erreur SQL lors de la sauvegarde de l'utilisateur.", e);
         }
     }
 
-    public EntityUser deleteUser(EntityUser entityUser) {
+    public EntityUser delete(EntityUser entityUser) {
         String query = "DELETE FROM user WHERE user_id = ?";
         try (Connection connection = this.databaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, entityUser.getId());
             int affectedRows = preparedStatement.executeUpdate();
-            if(affectedRows == 0) return null;
+            if(affectedRows == 0) {
+                throw new RepositoryException("Échec de la suppression de l'utilisateur.");
+            }
             return entityUser;
         }
-        catch (SQLException error) {
-            System.err.println("SQL Error: " + error.getMessage());
-            return null;
+        catch (SQLException e) {
+            throw new RepositoryException("Erreur SQL lors de la suppression de l'utilisateur.", e);
         }
     }
 
-    public List<EntityUser> getUsersBySearch(DtoUser dtoUser) {
+    public List<EntityUser> findByFilters(DtoUser dtoUser) {
         /*
          * This method uses Builder pattern to create a dynamic SQL,
          * Depending on which parameters are provided, additional WHERE conditions are appended to the query.
@@ -95,14 +97,12 @@ public class DaoUser {
             }
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-            return null;
+            throw new RepositoryException("Erreur SQL lors de la recherche d'une liste d'utilisateurs.", e);
         }
         return users;
     }
 
-    public EntityUser updateUser(EntityUser entityUser) {
-
+    public EntityUser update(EntityUser entityUser) {
         // The Builder pattern was not used here as it was simpler to directly retrieve values based on conditions.
         String query = "UPDATE user SET user_first_name = ?, user_last_name = ?, user_email = ? " +
                         "WHERE user_id = ?";
@@ -116,16 +116,17 @@ public class DaoUser {
 
             int affectedRows = stmt.executeUpdate();
             boolean isUpdateSuccess =  affectedRows > 0;
-            if(!isUpdateSuccess) return null;
+            if(!isUpdateSuccess) {
+                throw new RepositoryException("Échec de la mise à jour de l'utilisateur.");
+            }
             return entityUser;
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-            return null;
+            throw new RepositoryException("Erreur SQL lors de la mise à jour de l'utilsateur.", e);
         }
     }
 
-    public List<EntityUser> getAllUsers() {
+    public List<EntityUser> findAll() {
         String query = "SELECT user_id, user_first_name, user_last_name, user_email FROM user ORDER BY user_id ASC";
         List<EntityUser> users = new ArrayList<>();
         try(Connection connection = this.databaseConnection.getConnection();
@@ -137,33 +138,28 @@ public class DaoUser {
             }
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-            return null;
+            throw new RepositoryException("Erreur SQL lors de la sauvegarde", e);
         }
         return users;
     }
 
 
-
-
     /**
      * For clear users before simulations
-     * @return boolean
+     * @return Integer
      */
-    public boolean deleteAllUsers() {
+    public Integer deleteAll() {
         String query = "DELETE FROM user WHERE user_id > 0";
         try(Connection connection = this.databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            int affectedRows = preparedStatement.executeUpdate();
-            return affectedRows > 0;
+            return preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-            return false;
+            throw new RepositoryException("Erreur SQL lors de la suppression de tous les utilisateurs.", e);
         }
     }
 
-    public Integer getUserIdByEmail(String email) {
+    public Integer getIdByEmail(String email) {
         String query = "SELECT user_id FROM user WHERE user_email = ?";
         try (Connection connection = this.databaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -171,47 +167,14 @@ public class DaoUser {
             preparedStatement.setString(1, email);
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                return resultSet.getInt("user_id");
+            if (!resultSet.next()) {
+                throw new RepositoryException("Aucun utilisateur trouvé avec l'email : " + email);
             }
+            return resultSet.getInt("user_id");
+
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public DtoUser loadModelUserByEmail(Integer userId) {
-        String query = "SELECT user_id, user_first_name, user_last_name, user_email, user_create_at, user_active " +
-                "FROM user " +
-                "WHERE user_id = ?";
-        try(Connection connection = this.databaseConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, userId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if(resultSet.next()) {
-                String firstName = resultSet.getString("user_first_name");
-                String lastName = resultSet.getString("user_last_name");
-                String userEmail = resultSet.getString("user_email");
-                Timestamp createAt = resultSet.getTimestamp("user_create_at");
-                boolean userActive = resultSet.getBoolean("user_active");
-
-                DtoUser dtoUser = new DtoUser();
-
-                dtoUser.setLastName(lastName);
-                dtoUser.setFirstName(firstName);
-                dtoUser.setCurrentEmail(userEmail);
-                dtoUser.setCreateAt(createAt);
-                dtoUser.setUserActive(userActive);
-
-                return dtoUser;
-            }
-            return null;
-        }
-        catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
-            return null;
+            throw new RepositoryException("Échec de la récupérer de l'ID de l'utilisateur.", e);
         }
     }
 
@@ -224,9 +187,7 @@ public class DaoUser {
             return resultSet.next();
         }
         catch (SQLException e) {
-            System.err.println("SQL Error: " + e.getMessage());
+            throw new RepositoryException("Échec de la vérification pour savoir si l'email est déjà utilisé.", e);
         }
-        return false;
     }
-
 }

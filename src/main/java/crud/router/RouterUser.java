@@ -1,7 +1,7 @@
 package crud.router;
 
 import crud.controller.ControllerUser;
-import crud.dao.DaoUser;
+import crud.repository.RepositoryUser;
 import crud.database.DatabaseConnection;
 import crud.dto.DtoResponse;
 import crud.dto.DtoUser;
@@ -9,9 +9,7 @@ import crud.mapper.MapperUser;
 import crud.validation.ValidationUser;
 import crud.validation.ValidationFormat;
 import crud.entity.EntityUser;
-import crud.param.ParamsUser;
 import crud.service.ServiceUser;
-import crud.view.ViewUser;
 
 public class RouterUser {
 
@@ -19,13 +17,12 @@ public class RouterUser {
 
     public RouterUser() {
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        DaoUser daoUser = new DaoUser(databaseConnection);
+        RepositoryUser repositoryUser = new RepositoryUser(databaseConnection);
         ValidationFormat validationFormat = new ValidationFormat();
-        ValidationUser validationUser = new ValidationUser(validationFormat, daoUser);
+        ValidationUser validationUser = new ValidationUser(validationFormat, repositoryUser);
         MapperUser mapperUser = new MapperUser();
-        ServiceUser serviceUser = new ServiceUser(daoUser, mapperUser, validationUser);
-        ViewUser viewUser = new ViewUser();
-        this.controllerUser = new ControllerUser(serviceUser, viewUser);
+        ServiceUser serviceUser = new ServiceUser(repositoryUser, mapperUser, validationUser);
+        this.controllerUser = new ControllerUser(serviceUser);
     }
 
     public DtoResponse<EntityUser> addUser(DtoUser dtoUser) {

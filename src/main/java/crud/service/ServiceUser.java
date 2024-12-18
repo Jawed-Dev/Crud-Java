@@ -1,5 +1,6 @@
 package crud.service;
-import crud.dao.DaoUser;
+import crud.repository.RepositoryException;
+import crud.repository.RepositoryUser;
 import crud.dto.DtoUser;
 import crud.mapper.MapperUser;
 import crud.validation.ValidationUser;
@@ -9,114 +10,129 @@ import crud.entity.EntityUser;
 import java.util.List;
 
 public class ServiceUser {
-    private final DaoUser daoUser;
+    private final RepositoryUser repositoryUser;
     private final MapperUser mapperUser;
     private final ValidationUser validationUser;
-    public ServiceUser(DaoUser daoUser, MapperUser mapperUser, ValidationUser validationUser) {
-        this.daoUser = daoUser;
+
+    public ServiceUser(RepositoryUser repositoryUser, MapperUser mapperUser, ValidationUser validationUser) {
+        this.repositoryUser = repositoryUser;
         this.mapperUser = mapperUser;
         this.validationUser = validationUser;
     }
 
-    public EntityUser addUser(DtoUser dtoUser) {
+    public ServiceResult<EntityUser> addUser(DtoUser dtoUser) {
         try {
             ValidationResult dtoValidation = validationUser.validateAddUser(dtoUser);
-            if(!isValidationSuccess(dtoValidation)) return null;
-
+            if(!dtoValidation.isValid()) {
+                return new ServiceResult<>("Validation Error: " + dtoValidation.getErrorMessage());
+            }
             EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
-            ValidationResult mapperValidation = validationUser.validateResultMapper(entityUser);
-            if(!isValidationSuccess(mapperValidation)) return null;
-
-            entityUser = daoUser.addUser(entityUser);
-            ValidationResult daoValidation = validationUser.validateResultDao(entityUser);
-            if(!isValidationSuccess(daoValidation)) return null;
-            return entityUser;
+            entityUser = repositoryUser.add(entityUser);
+            return new ServiceResult<>(entityUser);
+        }
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
         }
         catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            return null;
+            return new ServiceResult<>("Error: " + e.getMessage());
         }
     }
 
-    public EntityUser deleteUser(DtoUser dtoUser) {
+    public ServiceResult<EntityUser> deleteUser(DtoUser dtoUser) {
         try {
-
             ValidationResult dtoValidation = validationUser.validateDeleteUser(dtoUser);
-            if(!isValidationSuccess(dtoValidation)) return null;
+            if(!dtoValidation.isValid()) {
+                return new ServiceResult<>("Validation Error: " + dtoValidation.getErrorMessage());
+            }
 
             EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
-            ValidationResult entityValidation = validationUser.validateResultMapper(entityUser);
-            if(!isValidationSuccess(entityValidation)) return null;
 
-            Integer idUser = daoUser.getUserIdByEmail(entityUser.getEmail());
-            ValidationResult idUserValidation = validationUser.validateIdUser(idUser);
-            if(!isValidationSuccess(idUserValidation)) return null;
+            Integer idUser = repositoryUser.getIdByEmail(entityUser.getEmail());
 
             entityUser.setId(idUser);
-
-            entityUser = daoUser.deleteUser(entityUser);
-            ValidationResult daoValidation = validationUser.validateResultDao(entityUser);
-            if(!isValidationSuccess(daoValidation)) return null;
-
-            return entityUser;
+            entityUser = repositoryUser.delete(entityUser);
+            return new ServiceResult<>(entityUser);
+        }
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
         }
         catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            return null;
+            return new ServiceResult<>("Error: " + e.getMessage());
         }
     }
 
-    public EntityUser updateUser(DtoUser dtoUser) {
+    public ServiceResult<EntityUser> updateUser(DtoUser dtoUser) {
         try {
             ValidationResult dtoValidation = validationUser.validateUpdateUser(dtoUser);
-            if(!isValidationSuccess(dtoValidation)) return null;
+            if(!dtoValidation.isValid()) {
+                return new ServiceResult<>("Validation Error: " + dtoValidation.getErrorMessage());
+            }
 
             EntityUser entityUser = mapperUser.dtoToEntityUser(dtoUser);
-            ValidationResult mapperValidation = validationUser.validateResultMapper(entityUser);
-            if(!isValidationSuccess(mapperValidation)) return null;
 
-            Integer idUser = daoUser.getUserIdByEmail(entityUser.getEmail());
-            ValidationResult idUserValidation = validationUser.validateIdUser(idUser);
-            if(!isValidationSuccess(idUserValidation)) return null;
+            Integer idUser = repositoryUser.getIdByEmail(entityUser.getEmail());
+
             entityUser.setId(idUser);
 
             if(dtoUser.getNewEmail() != null) entityUser.setEmail(dtoUser.getNewEmail());
             if(dtoUser.getNewFirstName() != null) entityUser.setFirstName(dtoUser.getNewFirstName());
             if(dtoUser.getNewLastName() != null) entityUser.setLastName(dtoUser.getNewLastName());
 
-            entityUser = daoUser.updateUser(entityUser);
-            ValidationResult daoValidation = validationUser.validateIdUser(idUser);
-            if(!isValidationSuccess(daoValidation)) return null;
-            return entityUser;
+            entityUser = repositoryUser.update(entityUser);
+            return new ServiceResult<>(entityUser);
+        }
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
         }
         catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            return null;
+            return new ServiceResult<>("Error: " + e.getMessage());
         }
     }
 
-    public List<EntityUser> getUsersBySearch(DtoUser dtoUser) {
-        ValidationResult dtoValidation = validationUser.validateGetUsersBySearch(dtoUser);
-        if(!isValidationSuccess(dtoValidation)) return null;
-        return this.daoUser.getUsersBySearch(dtoUser);
-    }
-
-
-    public List<EntityUser> getAllUsers() {
-        return this.daoUser.getAllUsers();
-    }
-
-
-    public boolean deleteAllUsers() {
-        return this.daoUser.deleteAllUsers();
-    }
-
-    private boolean isValidationSuccess (ValidationResult validationResult) {
-        if (!validationResult.isValid()) {
-            System.out.println(validationResult.getErrorMessage());
-            return false;
+    public ServiceResult<List<EntityUser>> getUsersBySearch(DtoUser dtoUser) {
+        try {
+            ValidationResult dtoValidation = validationUser.validateGetUsersBySearch(dtoUser);
+            if(!dtoValidation.isValid()) {
+                return new ServiceResult<>("Validation Error: " + dtoValidation.getErrorMessage());
+            }
+            List<EntityUser> users = this.repositoryUser.findByFilters(dtoUser);
+            return new ServiceResult<>(users);
         }
-        return true;
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return new ServiceResult<>("Error: " + e.getMessage());
+        }
     }
+
+
+    public ServiceResult<List<EntityUser>> getAllUsers() {
+        try {
+            List<EntityUser> users = this.repositoryUser.findAll();
+            return new ServiceResult<>(users);
+        }
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return new ServiceResult<>("Error: " + e.getMessage());
+        }
+    }
+
+
+    public ServiceResult<Integer> deleteAllUsers() {
+        try {
+            Integer amountUsersDeletes = this.repositoryUser.deleteAll();
+            return new ServiceResult<>(amountUsersDeletes);
+        }
+        catch (RepositoryException e) {
+            return new ServiceResult<>("Repository Error: " + e.getMessage());
+        }
+        catch (Exception e) {
+            return new ServiceResult<>("Error: " + e.getMessage());
+        }
+    }
+
 }
 

@@ -1,5 +1,6 @@
 package crud.unit.service;
-import crud.param.ParamsUser;
+import crud.dto.DtoUser;
+import crud.mapper.MapperUser;
 import crud.entity.EntityUser;
 import crud.service.ServiceUser;
 import crud.validation.ValidationResult;
@@ -7,10 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import crud.dao.DaoUser;
+import crud.repository.RepositoryUser;
 import crud.validation.ValidationUser;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,10 +22,15 @@ public class TestServiceDeleteUser {
     private ServiceUser serviceUser;
 
     @Mock
-    private DaoUser daoUser;
+    private RepositoryUser repositoryUser;
 
     @Mock
     private ValidationUser validationUser;
+
+    @Mock
+    private MapperUser mapperUser;
+
+
 
 
 }
