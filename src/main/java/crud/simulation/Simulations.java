@@ -4,6 +4,8 @@ import crud.dto.DtoUser;
 import crud.entity.EntityUser;
 import crud.router.RouterUser;
 
+import java.util.List;
+
 
 /**
  * This class permit to simulate requests HTTP
@@ -26,7 +28,7 @@ public class Simulations {
         DtoUser dtoUser = new DtoUser("Jawed", "Test", currentEmail);
         DtoResponse<EntityUser> dtoResponseAdd = this.routerUser.addUser(dtoUser);
         if(dtoResponseAdd.isSuccess()) {
-            System.out.println(dtoResponseAdd.getMessage());
+            System.out.println(dtoResponseAdd.getData());
         }
 
         // update user
@@ -35,7 +37,7 @@ public class Simulations {
         dtoDeleteUser.setNewEmail(newEmail);
         DtoResponse<EntityUser> dtoResponseUpdate = routerUser.updateUser(dtoDeleteUser);
         if(dtoResponseUpdate.isSuccess()) {
-            System.out.println(dtoResponseUpdate.getMessage());
+            System.out.println(dtoResponseUpdate.getData());
         }
     }
 
@@ -77,8 +79,17 @@ public class Simulations {
      */
     public void simulation4() {
         this.underlineString(4);
-        DtoUser dtoUser = new DtoUser("Jawed", "", "jawed.sim1.update@gmail.com");
-        this.routerUser.getUsersBySearch(dtoUser);
+        DtoUser dtoUser = new DtoUser("Jawed", "", "");
+        DtoResponse<List<EntityUser>> dtoResponse = this.routerUser.getUsersBySearch(dtoUser);
+        if(!dtoResponse.isSuccess()) {
+            System.out.println("Aucun utilisateur trouvé.");
+            return;
+        }
+        System.out.println(dtoResponse.getMessage());
+        List<EntityUser> listUsers = dtoResponse.getData();
+        for (EntityUser user : listUsers) {
+            System.out.println(user);
+        }
     }
 
     /**

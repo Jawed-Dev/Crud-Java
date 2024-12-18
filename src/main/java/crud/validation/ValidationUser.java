@@ -90,7 +90,6 @@ public class ValidationUser {
             return new ValidationResult(false, ERR_LASTNAME_INVALID);
         }
 
-
         return new ValidationResult(true);
     }
 
@@ -102,17 +101,17 @@ public class ValidationUser {
         if(!this.areDependenciesValid()) {
             return new ValidationResult(false, ERR_DEPENDENCIES);
         }
-        if(email != null && !validationFormat.isValidEmail(email)) {
+        if(email.isEmpty() && firstName.isEmpty() && lastName.isEmpty()) {
+            return new ValidationResult(false, ERR_FORMS_EMPTY);
+        }
+        if(!email.isEmpty() && !validationFormat.isValidEmail(email)) {
             return new ValidationResult(false, ERR_EMAIL_INVALID);
         }
-        if(firstName != null && !validationFormat.isValidFirstName(firstName)) {
+        if(!firstName.isEmpty() && !validationFormat.isValidFirstName(firstName)) {
             return new ValidationResult(false, ERR_FIRSTNAME_INVALID);
         }
-        if(lastName != null && !validationFormat.isValidLastName(lastName)) {
+        if(!lastName.isEmpty() && !validationFormat.isValidLastName(lastName)) {
             return new ValidationResult(false, ERR_LASTNAME_INVALID);
-        }
-        if(email == null && firstName == null && lastName == null) {
-            return new ValidationResult(false, ERR_FORMS_EMPTY);
         }
 
         return new ValidationResult(true);

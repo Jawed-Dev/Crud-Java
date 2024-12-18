@@ -25,7 +25,7 @@ public class EntityUser {
     // methods
     @Override
     public String toString() {
-        return "ModelUser {" +
+        return "Entity User {" +
             "id = " + this.id +
             ", firstName = '" + this.firstName + '\'' +
             ", lastName = '" + this.lastName + '\'' +

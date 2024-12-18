@@ -11,6 +11,8 @@ import crud.validation.ValidationFormat;
 import crud.entity.EntityUser;
 import crud.service.ServiceUser;
 
+import java.util.List;
+
 public class RouterUser {
 
     private final ControllerUser controllerUser;
@@ -41,8 +43,8 @@ public class RouterUser {
         this.controllerUser.getAllUsers ();
     }
 
-    public void getUsersBySearch(DtoUser dtoUser) {
-        this.controllerUser.getUsersBySearch(dtoUser);
+    public DtoResponse<List<EntityUser>> getUsersBySearch(DtoUser dtoUser) {
+        return this.controllerUser.getUsersBySearch(dtoUser);
     }
 
     public void deleteAllUsers() {
