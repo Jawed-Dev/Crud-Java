@@ -71,6 +71,9 @@ public class ValidationUser {
         if(!this.areDependenciesValid()) {
             return new ValidationResult(false, ERR_DEPENDENCIES);
         }
+        if(currentEmail == null && firstName == null && lastName == null) {
+            return new ValidationResult(false, ERR_FORMS_EMPTY);
+        }
         if(!repositoryUser.isEmailAlreadyUsed(currentEmail)) {
             return new ValidationResult(false, ERR_EMAIL_NOT_USED);
         }
@@ -86,9 +89,7 @@ public class ValidationUser {
         if(lastName != null && !validationFormat.isValidLastName(lastName)) {
             return new ValidationResult(false, ERR_LASTNAME_INVALID);
         }
-        if(currentEmail == null && firstName == null && lastName == null) {
-            return new ValidationResult(false, ERR_FORMS_EMPTY);
-        }
+
 
         return new ValidationResult(true);
     }

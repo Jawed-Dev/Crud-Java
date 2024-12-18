@@ -35,9 +35,11 @@ public class ControllerUser {
         if(!serviceResult.isSuccess()) {
             return new DtoResponse<>(false, serviceResult.getErrorMessage());
         }
+
         EntityUser entityUser = serviceResult.getData();
         String message = String.format(MSG_DELETE_SUCCESS,
              entityUser.getId(), entityUser.getFirstName(), entityUser.getLastName(), entityUser.getEmail());
+
         return new DtoResponse<>(true, message, entityUser);
     }
 
@@ -46,8 +48,10 @@ public class ControllerUser {
         if(!serviceResult.isSuccess()) {
             return new DtoResponse<>(false, serviceResult.getErrorMessage());
         }
+
         EntityUser entityUser = serviceResult.getData();
         String message = "La mise à jour de l'email de l'utilisateur a été effectué avec succès.";
+
         return new DtoResponse<>(true, message, entityUser);
     }
 
@@ -56,10 +60,12 @@ public class ControllerUser {
         if(!serviceResult.isSuccess()) {
             return new DtoResponse<>(false, serviceResult.getErrorMessage());
         }
+
         List<EntityUser> users = serviceResult.getData();
         if(users.isEmpty()) {
             return new DtoResponse<>(false, "ERR_EMPTY_USERS_SEARCH");
         }
+
         return new DtoResponse<>(true, "La recherche a été effectué avec succès.", users);
     }
 
@@ -68,10 +74,12 @@ public class ControllerUser {
         if(!serviceResult.isSuccess()) {
             return new DtoResponse<>(false, serviceResult.getErrorMessage());
         }
+
         List<EntityUser> users = serviceResult.getData();
         if(users.isEmpty()) {
             return new DtoResponse<>(false, "ERR_NO_DATA");
         }
+
         return new DtoResponse<>(true, "Les utilisateurs ont été récupérés avec succès.", users);
     }
 
@@ -82,7 +90,9 @@ public class ControllerUser {
         if(!serviceResult.isSuccess()) {
             return new DtoResponse<>(false, serviceResult.getErrorMessage());
         }
+
         Integer amountUsersDeleted = serviceResult.getData();
+
         return new DtoResponse<>(true, "Les utilisateurs ont été supprimés avec succès.", amountUsersDeleted);
     }
 }

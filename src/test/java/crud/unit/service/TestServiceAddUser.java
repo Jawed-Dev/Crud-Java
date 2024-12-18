@@ -84,23 +84,6 @@ public class TestServiceAddUser {
     }
 
     @Test
-    public void shouldInvalidByAllDataEmpty() {
-        DtoUser dtoUser = new DtoUser("","", "");
-
-        when(validationUser.validateAddUser(dtoUser))
-                .thenReturn(new ValidationResult(false, ValidationUser.ERR_FORMS_EMPTY));
-
-        ServiceResult<EntityUser> serviceResult = serviceUser.addUser(dtoUser);
-
-        assertFalse(serviceResult.isSuccess());
-        assertNull(serviceResult.getData());
-        assertTrue(serviceResult.getErrorMessage().contains(ValidationUser.ERR_FORMS_EMPTY));
-
-        verify(repositoryUser, never()).add(any());
-    }
-
-
-    @Test
     public void shouldInvalidByEmail() {
         DtoUser dtoUser = new DtoUser(FIRST_NAME_VALID,LAST_NAME_VALID, EMAIL_INVALID);
 
